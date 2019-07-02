@@ -90,6 +90,7 @@ plugin.im.action.feature.ui.StyleConfigCtrl = function($scope, $element) {
   $scope.$on('color.change', this.onColorChange.bind(this));
   $scope.$on('color.reset', this.onColorReset.bind(this));
   $scope.$on('opacity.slidestop', this.onOpacityChange.bind(this));
+  $scope.$on('fillOpacity.slidestop', this.onOpacityChange.bind(this));
   $scope.$on('size.slidestop', this.onSizeChange.bind(this));
   $scope.$on(os.ui.layer.VectorStyleControlsEventType.LINE_DASH_CHANGE, this.onLineDashChange.bind(this));
   $scope.$on(os.ui.icon.IconPickerEventType.CHANGE, this.onIconChange.bind(this));

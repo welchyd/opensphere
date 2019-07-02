@@ -30,7 +30,9 @@ os.ui.layer.vectorStyleControlsDirective = function() {
     replace: true,
     scope: {
       'color': '=',
+      'fillColor': '=?',
       'opacity': '=',
+      'fillOpacity': '=?',
       'icon': '=?',
       'centerIcon': '=?',
       'iconSet': '=?',
@@ -68,6 +70,7 @@ os.ui.Module.directive('vectorstylecontrols', [os.ui.layer.vectorStyleControlsDi
  * @ngInject
  */
 os.ui.layer.VectorStyleControlsCtrl = function($scope) {
+  console.log('vectorstylecontrolsctrl.constructor', $scope);
   os.ui.layer.VectorStyleControlsCtrl.base(this, 'constructor');
 
   /**
@@ -136,6 +139,19 @@ os.ui.layer.VectorStyleControlsCtrl.prototype.onShapeChange = function() {
 os.ui.layer.VectorStyleControlsCtrl.prototype.hasCenter = function() {
   if (this.scope && this.scope['shape']) {
     return os.style.CENTER_LOOKUP[this.scope['shape']];
+  }
+  return false;
+};
+
+
+/**
+ * Decide if we show the fill controls
+ * @return {boolean}
+ * @export
+ */
+os.ui.layer.VectorStyleControlsCtrl.prototype.showFillStyleControls = function() {
+  if (this.scope && this.scope['fillOpacity'] !== undefined) {
+    return true;
   }
   return false;
 };

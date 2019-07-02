@@ -1,4 +1,4 @@
-goog.provide('os.command.FeatureOpacity');
+goog.provide('os.command.FeatureStrokeOpacity');
 
 goog.require('os.command.AbstractFeatureStyle');
 goog.require('os.events.PropertyChangeEvent');
@@ -8,8 +8,7 @@ goog.require('os.ui');
 
 
 /**
- * Changes the opacity of a feature
- *
+ * Changes the stroke opacity of a feature
  * @extends {os.command.AbstractFeatureStyle}
  * @param {string} layerId
  * @param {string} featureId
@@ -17,10 +16,10 @@ goog.require('os.ui');
  * @param {number=} opt_oldOpacity
  * @constructor
  */
-os.command.FeatureOpacity = function(layerId, featureId, opacity, opt_oldOpacity) {
-  os.command.FeatureOpacity.base(this, 'constructor', layerId, featureId, opacity, opt_oldOpacity);
-  this.title = 'Change Feature Opacity';
-  this.metricKey = os.metrics.Layer.FEATURE_OPACITY;
+os.command.FeatureStrokeOpacity = function(layerId, featureId, opacity, opt_oldOpacity) {
+  os.command.FeatureStrokeOpacity.base(this, 'constructor', layerId, featureId, opacity, opt_oldOpacity);
+  this.title = 'Change Feature Stroke Opacity';
+  this.metricKey = os.metrics.Layer.FEATURE_STROKE_OPACITY;
 
   if (!opacity) {
     var feature = /** @type {ol.Feature} */ (this.getFeature());
@@ -36,47 +35,51 @@ os.command.FeatureOpacity = function(layerId, featureId, opacity, opt_oldOpacity
 
   this.value = opacity;
 };
-goog.inherits(os.command.FeatureOpacity, os.command.AbstractFeatureStyle);
+goog.inherits(os.command.FeatureStrokeOpacity, os.command.AbstractFeatureStyle);
 
 
 /**
  * @type {number}
  * @const
  */
-os.command.FeatureOpacity.DEFAULT_OPACITY = 1;
+os.command.FeatureStrokeOpacity.DEFAULT_OPACITY = 1;
 
 
 /**
  * @inheritDoc
  */
-os.command.FeatureOpacity.prototype.getOldValue = function() {
+os.command.FeatureStrokeOpacity.prototype.getOldValue = function() {
   var feature = /** @type {ol.Feature} */ (this.getFeature());
   var config = /** @type {Array<Object>|Object|undefined} */ (this.getFeatureConfigs(feature));
   if (goog.isArray(config)) {
     config = config[0];
   }
 
-  return config ? os.style.getConfigOpacityColor(config) : os.command.FeatureOpacity.DEFAULT_OPACITY;
+  return config ? os.style.getConfigOpacityColor(config) : os.command.FeatureStrokeOpacity.DEFAULT_OPACITY;
 };
 
 
 /**
  * @inheritDoc
  */
-os.command.FeatureOpacity.prototype.applyValue = function(configs, value) {
+os.command.FeatureStrokeOpacity.prototype.applyValue = function(configs, value) {
+  var color;
+
   for (var i = 0; i < configs.length; i++) {
-    os.style.setConfigOpacityColor(configs[i], value);
+    color = os.style.getConfigColor(configs[i], true, os.style.StyleField.STROKE);
+    color[3] = value;
+    os.style.setConfigColor(configs[i], color, [os.style.StyleField.STROKE, os.style.StyleField.IMAGE]);
   }
 
-  os.command.FeatureOpacity.base(this, 'applyValue', configs, value);
+  os.command.FeatureStrokeOpacity.base(this, 'applyValue', configs, value);
 };
 
 
 /**
  * @inheritDoc
  */
-os.command.FeatureOpacity.prototype.finish = function(configs) {
-  // dispatch the opacity change event on the source for the histogram
+os.command.FeatureStrokeOpacity.prototype.finish = function(configs) {
+  // dispatch the stroke opacity change event on the source for the histogram
   var feature = /** @type {ol.Feature} */ (this.getFeature());
   var source = /** @type {plugin.file.kml.KMLSource} */ (os.feature.getSource(feature));
   var rootNode = source.getRootNode();
@@ -86,5 +89,5 @@ os.command.FeatureOpacity.prototype.finish = function(configs) {
     children[i].dispatchEvent(new os.events.PropertyChangeEvent('icons'));
   }
 
-  os.command.FeatureOpacity.base(this, 'finish', configs);
+  os.command.FeatureStrokeOpacity.base(this, 'finish', configs);
 };

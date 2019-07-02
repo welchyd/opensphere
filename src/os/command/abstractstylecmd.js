@@ -167,6 +167,7 @@ os.command.AbstractStyle.prototype.setValue = function(value) {
   goog.asserts.assert(value != null, 'style value must be defined');
 
   var layer = /** @type {os.layer.Vector} */ (this.getLayer());
+  console.log('AbstractStyle.setValue', layer.getId(), layer);;
   goog.asserts.assert(layer, 'layer must be defined');
 
   var config = this.getLayerConfig(layer);

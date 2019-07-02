@@ -68,6 +68,8 @@ plugin.places.EXPORT_FIELDS_ = [
   os.style.StyleField.SHOW_LABEL_COLUMNS,
   os.style.StyleField.LABEL_COLOR,
   os.style.StyleField.LABEL_SIZE,
+  os.style.StyleField.FILL_COLOR,
+  os.style.StyleField.FILL_OPACITY,
   os.Fields.ALT,
   os.Fields.ALT_UNITS,
   os.Fields.SEMI_MAJOR,

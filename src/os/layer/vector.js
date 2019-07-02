@@ -661,6 +661,7 @@ os.layer.Vector.prototype.setNodeUI = function(value) {
  * @inheritDoc
  */
 os.layer.Vector.prototype.setOpacity = function(value) {
+  // TODO this is the function that gets called for setOpacity higher up. So now I need a setFillOpacity?
   var source = this.getSource();
   if (source instanceof os.source.Vector) {
     source.setOverlayOpacity(value);
@@ -1112,6 +1113,8 @@ os.layer.Vector.prototype.persist = function(opt_to) {
     opt_to[os.style.StyleField.LOB_BEARING_COLUMN] = config[os.style.StyleField.LOB_BEARING_COLUMN];
     opt_to[os.style.StyleField.LOB_BEARING_ERROR] = config[os.style.StyleField.LOB_BEARING_ERROR];
     opt_to[os.style.StyleField.LOB_BEARING_ERROR_COLUMN] = config[os.style.StyleField.LOB_BEARING_ERROR_COLUMN];
+    opt_to[os.style.StyleField.FILL_COLOR] = os.style.getConfigColor(config, false, os.style.StyleField.FILL);
+    opt_to[os.style.StyleField.FILL_OPACITY] = config[os.style.StyleField.FILL_OPACITY];
     opt_to[os.style.StyleField.ROTATION_COLUMN] = config[os.style.StyleField.ROTATION_COLUMN];
     opt_to[os.style.StyleField.SHOW_ROTATION] = config[os.style.StyleField.SHOW_ROTATION];
     opt_to[os.style.StyleField.SHOW_ARROW] = config[os.style.StyleField.SHOW_ARROW];
@@ -1121,6 +1124,11 @@ os.layer.Vector.prototype.persist = function(opt_to) {
     opt_to[os.style.StyleField.SHOW_ELLIPSOIDS] = config[os.style.StyleField.SHOW_ELLIPSOIDS];
     opt_to[os.style.StyleField.SHOW_GROUND_REF] = config[os.style.StyleField.SHOW_GROUND_REF];
   }
+  console.log('vector.js:persist', config, opt_to);
+  console.log('- stroke.color / fill.color / fillColor / image.color / image.fill.color', config.stroke.color, config.fill.color, config.fillColor, config.color, config.image.color);
+  console.log('- no arg/fill', os.style.getConfigColor(config), os.style.getConfigColor(config, false, os.style.StyleField.FILL));
+  console.log('- color/fillColor', opt_to[os.style.StyleField.COLOR], opt_to[os.style.StyleField.FILL_COLOR]);
+  console.log('- opacity/fillOpacity', opt_to['opacity'], opt_to[os.style.StyleField.FILL_OPACITY]);
 
   var source = /** @type {os.IPersistable} */ (this.getSource());
   if (source && os.implements(source, os.source.ISource.ID)) {
@@ -1140,6 +1148,8 @@ os.layer.Vector.prototype.restore = function(config) {
   }
 
   var styleConf = os.style.StyleManager.getInstance().getOrCreateLayerConfig(this.getId());
+  console.log('-- Do we start with color/fill/fillColor', styleConf.color, styleConf.fill, styleConf.fillColor);
+  console.log('-- what we stored', config.color, config.fill, config.fillColor);
 
   if (config['provider'] != null) {
     this.setProvider(config['provider']);
@@ -1187,6 +1197,11 @@ os.layer.Vector.prototype.restore = function(config) {
 
   if (config[os.style.StyleField.COLOR] != null) {
     os.style.setConfigColor(styleConf, os.style.toRgbaString(config[os.style.StyleField.COLOR]));
+    console.log('-- Has fill been changed here? Likely', styleConf.color, styleConf.fill);
+  }
+
+  if (config[os.style.StyleField.FILL_COLOR] != null) {
+    os.style.setConfigColor(styleConf, os.style.toRgbaString(config[os.style.StyleField.FILL_COLOR], os.style.StyleField.FILL));
   }
 
   if (config[os.style.StyleField.REPLACE_STYLE] != null) {
@@ -1231,6 +1246,8 @@ os.layer.Vector.prototype.restore = function(config) {
 
   styleConf[os.style.StyleField.ARROW_SIZE] = config[os.style.StyleField.ARROW_SIZE] || os.style.DEFAULT_ARROW_SIZE;
   styleConf[os.style.StyleField.ARROW_UNITS] = config[os.style.StyleField.ARROW_UNITS] || os.style.DEFAULT_UNITS;
+  styleConf[os.style.StyleField.FILL_COLOR] = config[os.style.StyleField.FILL_COLOR] || os.style.DEFAULT_FILL_COLOR;
+  styleConf[os.style.StyleField.FILL_OPACITY] = config[os.style.StyleField.FILL_OPACITY] || os.style.DEFAULT_FILL_ALPHA;
   styleConf[os.style.StyleField.LOB_COLUMN_LENGTH] = config[os.style.StyleField.LOB_COLUMN_LENGTH] ||
     os.style.DEFAULT_LOB_LENGTH;
   styleConf[os.style.StyleField.LOB_LENGTH] = config[os.style.StyleField.LOB_LENGTH] || os.style.DEFAULT_LOB_LENGTH;
@@ -1253,6 +1270,10 @@ os.layer.Vector.prototype.restore = function(config) {
   styleConf[os.style.StyleField.LABEL_COLOR] = config[os.style.StyleField.LABEL_COLOR];
   styleConf[os.style.StyleField.LABEL_SIZE] = config[os.style.StyleField.LABEL_SIZE] || os.style.label.DEFAULT_SIZE;
   styleConf[os.style.StyleField.SHOW_LABELS] = config[os.style.StyleField.SHOW_LABELS] || false;
+  console.log('vector.js:restore', config, styleConf);
+  // console.log('- stroke.color / fill.color / fill / image.color / image.fill.color', config.stroke.color, config.fill.color, config.fillColor);
+  console.log('- color/fillColor', styleConf[os.style.StyleField.COLOR], styleConf[os.style.StyleField.FILL_COLOR]);
+  console.log('- opacity/fillOpacity', styleConf['opacity'], styleConf[os.style.StyleField.FILL_OPACITY]);
 
   var source = /** @type {os.IPersistable} */ (this.getSource());
   if (source && os.implements(source, os.source.ISource.ID)) {

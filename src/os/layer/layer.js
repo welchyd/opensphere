@@ -266,6 +266,7 @@ os.layer.setHue = function(layer, value) {
  * @param {number} value
  */
 os.layer.setOpacity = function(layer, value) {
+  console.log('os.layer.setOpacity', value, layer);
   layer.setOpacity(value);
 };
 

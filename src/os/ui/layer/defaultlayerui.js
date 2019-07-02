@@ -119,6 +119,7 @@ os.ui.layer.DefaultLayerUICtrl = function($scope, $element, $timeout) {
   this.initialValues = {};
 
   var properties = this.getProperties();
+  console.log('-- properties', properties);
 
   // Listen for slider start, change and stop events for each of the slider properties. These will handle live updates
   // of the layer in the view as well as placing commands on the stack on stop for each change.
@@ -167,6 +168,7 @@ os.ui.layer.DefaultLayerUICtrl.prototype.getProperties = function() {
  * @inheritDoc
  */
 os.ui.layer.DefaultLayerUICtrl.prototype.initUI = function() {
+  console.log('DefaultLayerUICtrl.initUI');
   os.ui.layer.DefaultLayerUICtrl.base(this, 'initUI');
 
   if (!this.isDisposed()) {
@@ -387,6 +389,7 @@ os.ui.layer.DefaultLayerUICtrl.prototype.onSliderStart = function(event, value) 
  * @protected
  */
 os.ui.layer.DefaultLayerUICtrl.prototype.onSliderStop = function(callback, key, event, value) {
+  console.log('DefaultLayerUICtrl.onSliderStop', key, value);
   var fn =
       /**
        * @param {os.layer.ILayer} layer

@@ -3,6 +3,8 @@ goog.provide('plugin.file.kml.KMLNodeLayerUICtrl.UIEventType');
 goog.provide('plugin.file.kml.kmlNodeLayerUIDirective');
 goog.require('os.command.FeatureCenterShape');
 goog.require('os.command.FeatureColor');
+goog.require('os.command.FeatureFillColor');
+goog.require('os.command.FeatureFillOpacity');
 goog.require('os.command.FeatureIcon');
 goog.require('os.command.FeatureLabel');
 goog.require('os.command.FeatureLabelColor');
@@ -12,6 +14,8 @@ goog.require('os.command.FeatureOpacity');
 goog.require('os.command.FeatureShape');
 goog.require('os.command.FeatureShowLabel');
 goog.require('os.command.FeatureSize');
+goog.require('os.command.FeatureStrokeColor');
+goog.require('os.command.FeatureStrokeOpacity');
 goog.require('os.command.ParallelCommand');
 goog.require('os.data.ColumnDefinition');
 goog.require('os.ui.Module');
@@ -99,6 +103,11 @@ plugin.file.kml.KMLNodeLayerUICtrl = function($scope, $element, $timeout) {
   $scope.$on('opacity.slide', this.onOpacityValueChange.bind(this));
   $scope.$on('opacity.slidestart', this.onSliderStart.bind(this));
   $scope.$on('opacity.slidestop', this.onOpacityChange.bind(this));
+  $scope.$on('fillOpacity.slide', this.onFillOpacityValueChange.bind(this));
+  $scope.$on('fillOpacity.slidestart', this.onSliderStart.bind(this));
+  $scope.$on('fillOpacity.slidestop', this.onFillOpacityChange.bind(this));
+  $scope.$on('fillColor.change', this.onFillColorChange.bind(this));
+  $scope.$on('fillColor.reset', this.onFillColorReset.bind(this));
 
   os.dispatcher.listen(plugin.file.kml.KMLNodeLayerUICtrl.UIEventType.REFRESH, this.initUI, false, this);
 };
@@ -134,6 +143,19 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.getProperties = function() {
 /**
  * @inheritDoc
  */
+plugin.file.kml.KMLNodeLayerUICtrl.prototype.initUI = function() {
+  plugin.file.kml.KMLNodeLayerUICtrl.base(this, 'initUI');
+
+  if (this.scope) {
+    this.scope['fillColor'] = this.getFillColor();
+    this.scope['fillOpacity'] = this.getFillOpacity();
+  }
+};
+
+
+/**
+ * @inheritDoc
+ */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.getColor = function() {
   var items = /** @type {Array<!plugin.file.kml.ui.KMLNode>} */ (this.scope['items']);
 
@@ -158,6 +180,66 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.getColor = function() {
   }
 
   return null;
+};
+
+
+/**
+ * @inheritDoc
+ */
+plugin.file.kml.KMLNodeLayerUICtrl.prototype.getFillColor = function() {
+  var items = /** @type {Array<!plugin.file.kml.ui.KMLNode>} */ (this.scope['items']);
+
+  if (items) {
+    for (var i = 0, n = items.length; i < n; i++) {
+      var feature = items[i].getFeature();
+      if (feature) {
+        var config = /** @type {Object|undefined} */ (feature.get(os.style.StyleType.FEATURE));
+
+        if (config) {
+          if (goog.isArray(config)) {
+            config = config[0];
+          }
+
+          var color = os.style.getConfigColor(config, false, os.style.StyleField.FILL);
+          color = color || os.style.DEFAULT_LAYER_COLOR;
+
+          if (color) {
+            return os.color.toHexString(color);
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+
+/**
+ * @inheritDoc
+ */
+plugin.file.kml.KMLNodeLayerUICtrl.prototype.getFillOpacity = function() {
+  var items = /** @type {Array<!plugin.file.kml.ui.KMLNode>} */ (this.scope['items']);
+  var opacity = os.style.DEFAULT_ALPHA;
+
+  if (items) {
+    for (var i = 0, n = items.length; i < n; i++) {
+      var feature = items[i].getFeature();
+      if (feature) {
+        var config = /** @type {Object|undefined} */ (feature.get(os.style.StyleType.FEATURE));
+
+        if (config) {
+          if (goog.isArray(config)) {
+            config = config[0];
+          }
+          var color = os.style.getConfigColor(config, true, os.style.StyleField.FILL);
+          opacity = color[3];
+        }
+      }
+    }
+  }
+
+  return opacity;
 };
 
 
@@ -339,7 +421,9 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.getOpacity = function() {
           if (goog.isArray(config)) {
             config = config[0];
           }
-          opacity = os.style.getConfigOpacityColor(config) || os.style.DEFAULT_ALPHA;
+
+          var color = os.style.getConfigColor(config, true, os.style.StyleField.STROKE);
+          opacity = color[3];
         }
       }
     }
@@ -454,7 +538,25 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.getLockable = function() {
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onOpacityValueChange = function(event, value) {
   event.stopPropagation();
+
+  // If we have a fill opacity and it is already the same as the stroke opacity, keep them the same
+  if (this.scope['fillOpacity'] !== undefined && this.scope['opacity'] == this.scope['fillOpacity']) {
+    this.scope['fillOpacity'] = value;
+  }
+
   this.scope['opacity'] = value; // do not set this on the config - the command takes care of that
+};
+
+
+/**
+ * Handle changes to fill opacity while it changes via slide controls
+ * @param {?angular.Scope.Event} event
+ * @param {?} value
+ * @protected
+ */
+plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillOpacityValueChange = function(event, value) {
+  event.stopPropagation();
+  this.scope['fillOpacity'] = value;
 };
 
 
@@ -479,6 +581,90 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onLockChange = function() {
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onColorChange = function(event, value) {
   event.stopPropagation();
+  var fn;
+
+  // Make sure the value includes the current opacity
+  var colorValue = os.color.toRgbArray(value);
+  colorValue[3] = this.scope['opacity'];
+
+  // Determine if we are changing both stroke and fill entirely, or keeping opacities separate, or only affecting stroke
+  var color = this.scope['color'];
+  var fillColor = this.scope['fillColor'];
+  var opacity = this.scope['opacity'];
+  var fillOpacity = this.scope['fillOpacity'];
+
+  this.scope['color'] = os.style.toRgbaString(colorValue);
+
+  if (color == fillColor && opacity == fillOpacity) {
+    fn =
+    /**
+     * @param {string} layerId
+     * @param {string} featureId
+     * @return {os.command.ICommand}
+     */
+    function(layerId, featureId) {
+      return new os.command.FeatureColor(layerId, featureId, colorValue);
+    };
+
+    this.createFeatureCommand(fn);
+  } else if (color == fillColor) {
+    // We run these separately so that they retain the different opacities
+    fn =
+    /**
+     * @param {string} layerId
+     * @param {string} featureId
+     * @return {os.command.ICommand}
+     */
+    function(layerId, featureId) {
+      return new os.command.FeatureStrokeColor(layerId, featureId, colorValue);
+    };
+
+    this.createFeatureCommand(fn);
+
+    // Use the fill's opacity instead of the stroke's opacity
+    colorValue[3] = fillOpacity;
+
+    fn =
+    /**
+     * @param {string} layerId
+     * @param {string} featureId
+     * @return {os.command.ICommand}
+     */
+    function(layerId, featureId) {
+      return new os.command.FeatureFillColor(layerId, featureId, colorValue);
+    };
+
+    this.createFeatureCommand(fn);
+  } else {
+    fn =
+    /**
+     * @param {string} layerId
+     * @param {string} featureId
+     * @return {os.command.ICommand}
+     */
+    function(layerId, featureId) {
+      return new os.command.FeatureStrokeColor(layerId, featureId, colorValue);
+    };
+
+    this.createFeatureCommand(fn);
+  }
+};
+
+
+/**
+ * Handles changes to fill color
+ * @param {angular.Scope.Event} event
+ * @param {string} value
+ * @protected
+ */
+plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillColorChange = function(event, value) {
+  event.stopPropagation();
+
+  // Make sure the value includes the current opacity
+  var colorValue = os.color.toRgbArray(value);
+  colorValue[3] = this.scope['fillOpacity'];
+
+  this.scope['fillColor'] = os.style.toRgbaString(colorValue);
 
   var fn =
       /**
@@ -487,10 +673,26 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onColorChange = function(event, val
        * @return {os.command.ICommand}
        */
       function(layerId, featureId) {
-        return new os.command.FeatureColor(layerId, featureId, value);
+        return new os.command.FeatureFillColor(layerId, featureId, colorValue);
       };
 
   this.createFeatureCommand(fn);
+};
+
+
+/**
+ * Handles color reset
+ * @param {angular.Scope.Event} event
+ * @protected
+ */
+plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillColorReset = function(event) {
+  event.stopPropagation();
+
+  // clear the layer color config value
+  this.onFillColorChange(event, '');
+
+  // reset to the layer color
+  this.scope['fillColor'] = this.getColor();
 };
 
 
@@ -608,8 +810,11 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onCenterShapeChange = function(even
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onOpacityChange = function(event, value) {
   event.stopPropagation();
 
+  var fn;
+
   if (value) {
-    var fn =
+    if (this.scope['fillOpacity'] !== undefined && this.scope['opacity'] == this.scope['fillOpacity']) {
+      fn =
         /**
          * @param {string} layerId
          * @param {string} featureId
@@ -618,9 +823,43 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onOpacityChange = function(event, v
         function(layerId, featureId) {
           return new os.command.FeatureOpacity(layerId, featureId, value);
         };
+    } else {
+      fn =
+        /**
+         * @param {string} layerId
+         * @param {string} featureId
+         * @return {os.command.ICommand}
+         */
+        function(layerId, featureId) {
+          return new os.command.FeatureStrokeOpacity(layerId, featureId, value);
+        };
+    }
 
     this.createFeatureCommand(fn);
   }
+};
+
+
+/**
+ * Handles changes to fill color
+ * @param {angular.Scope.Event} event
+ * @param {number} value
+ * @protected
+ */
+plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillOpacityChange = function(event, value) {
+  event.stopPropagation();
+
+  var fn =
+      /**
+       * @param {string} layerId
+       * @param {string} featureId
+       * @return {os.command.ICommand}
+       */
+      function(layerId, featureId) {
+        return new os.command.FeatureFillOpacity(layerId, featureId, value);
+      };
+
+  this.createFeatureCommand(fn);
 };
 
 
