@@ -4,6 +4,7 @@ goog.provide('os.ui.layer.vectorLayerUIDirective');
 goog.require('goog.color');
 goog.require('os.MapChange');
 goog.require('os.array');
+goog.require('os.command.LayerStyle');
 goog.require('os.command.VectorLayerAutoRefresh');
 goog.require('os.command.VectorLayerCenterShape');
 goog.require('os.command.VectorLayerColor');
@@ -127,10 +128,6 @@ os.ui.layer.VectorLayerUICtrl = function($scope, $element, $timeout) {
    */
   this['showAltitudeModes'] = false;
 
-  var layer = $scope.items[0].getLayer();
-  var options = layer.getLayerOptions();
-  console.log('VectorLayerUICtrl constructor', options.color, options.opacity, options.fillColor, options.fillOpacity);
-
   os.ui.layer.VectorLayerUICtrl.base(this, 'constructor', $scope, $element, $timeout);
   this.defaultColorControl = os.ui.ColorControlType.PICKER;
 
@@ -196,7 +193,6 @@ os.ui.layer.VectorLayerUICtrl.prototype.initUI = function() {
     this['columns'] = this.getColumns();
     this['showRotation'] = this.getShowRotation();
     this['rotationColumn'] = this.getRotationColumn();
-    // console.log('vectorlayeruictrl.initui', this.getFillColor(), this.getFillOpacity());
 
     this.updateReplaceStyle_();
 
@@ -321,7 +317,6 @@ os.ui.layer.VectorLayerUICtrl.prototype.reconcileLabelsState_ = function() {
  */
 os.ui.layer.VectorLayerUICtrl.prototype.onColorChange = function(event, value) {
   event.stopPropagation();
-  var fn;
 
   // Make sure the value includes the current opacity
   var colorValue = os.color.toRgbArray(value);
@@ -335,62 +330,56 @@ os.ui.layer.VectorLayerUICtrl.prototype.onColorChange = function(event, value) {
 
   this.scope['color'] = os.style.toRgbaString(colorValue);
 
-  console.log('VectorLayerUICtrl.onColorChange', color, opacity, fillColor, fillOpacity);
-  console.log('- value/colorValue', value, colorValue, this.scope);
-
   if (color == fillColor && opacity == fillOpacity) {
-    fn =
-    /**
-     * @param {string} layerId
-     * @param {string} featureId
-     * @return {os.command.ICommand}
-     */
-    function(layer) {
-      return new os.command.VectorLayerColor(layer.getId(), colorValue);
-    };
+    var fn =
+        /**
+         * @param {os.layer.ILayer} layer
+         * @return {os.command.ICommand}
+         */
+        function(layer) {
+          return new os.command.VectorLayerColor(layer.getId(), colorValue);
+        };
 
     this.createCommand(fn);
   } else if (color == fillColor) {
     // We run these separately so that they retain the different opacities
-    fn =
-    /**
-     * @param {string} layerId
-     * @param {string} featureId
-     * @return {os.command.ICommand}
-     */
-    function(layer) {
-      return new os.command.VectorLayerStrokeColor(layer.getId(), colorValue); // TODO the way I want to do it, but not for now
-      // return new os.command.VectorLayerColor(layer.getId(), colorValue);
-    };
+    var fn2 =
+        /**
+         * @param {os.layer.ILayer} layer
+         * @return {os.command.ICommand}
+         */
+        function(layer) {
+          return new os.command.VectorLayerStrokeColor(layer.getId(), colorValue);
+          // TODO the way I want to do it, but not for now
+          // return new os.command.VectorLayerColor(layer.getId(), colorValue);
+        };
 
-    this.createCommand(fn);
+    this.createCommand(fn2);
 
     // Use the fill's opacity instead of the stroke's opacity
     colorValue[3] = fillOpacity;
 
-    fn =
-    /**
-     * @param {string} layerId
-     * @param {string} featureId
-     * @return {os.command.ICommand}
-     */
-    function(layer) {
-      return new os.command.VectorLayerFillColor(layer.getId(), colorValue); // TODO the way I want to do it, but not for now
-    };
+    var fn3 =
+        /**
+         * @param {os.layer.ILayer} layer
+         * @return {os.command.ICommand}
+         */
+        function(layer) {
+          return new os.command.VectorLayerFillColor(layer.getId(), colorValue); // TODO the way I want to do it, but not for now
+        };
 
-    this.createCommand(fn);
+    this.createCommand(fn3);
   } else {
-    fn =
-    /**
-     * @param {string} layerId
-     * @param {string} featureId
-     * @return {os.command.ICommand}
-     */
-    function(layer) {
-      return new os.command.VectorLayerStrokeColor(layer.getId(), colorValue);
-    };
+    var fn4 =
+        /**
+         * @param {os.layer.ILayer} layer
+         * @return {os.command.ICommand}
+         */
+        function(layer) {
+          return new os.command.VectorLayerStrokeColor(layer.getId(), colorValue);
+        };
 
-    this.createCommand(fn);
+    this.createCommand(fn4);
   }
 };
 
@@ -460,63 +449,58 @@ os.ui.layer.VectorLayerUICtrl.prototype.onFillColorReset = function(event) {
  * @inheritDoc
  */
 os.ui.layer.VectorLayerUICtrl.prototype.onSliderStop = function(callback, key, event, value) {
-  console.log('VectorLayerUICtrl.onSliderStop', key, value);
-
   event.stopPropagation();
 
-  var fn;
+  // if (value) {
+  //   if (this.scope['fillOpacity'] !== undefined && this.scope['opacity'] == this.scope['fillOpacity']) {
+  //     var fn =
+  //         /**
+  //          * @param {os.layer.ILayer} layer
+  //          * @return {?os.command.ICommand}
+  //          */
+  //         function(layer) {
+  //           return new os.command.FeatureOpacity(layer, value);
+  //         };
+  //     this.createCommand(fn.bind(this));
+  //   } else {
+  //     var fn =
+  //         /**
+  //          * @param {os.layer.ILayer} layer
+  //          * @return {?os.command.ICommand}
+  //          */
+  //         function(layer) {
+  //           return new os.command.FeatureStrokeOpacity(layer, value);
+  //         };
+  //     this.createCommand(fn.bind(this));
+  //   }
+
+  //   // TODO re-enable this, once I have the mess below figured out and integrated
+  //   // this.createFeatureCommand(fn);
+  // }
 
   if (value) {
-    if (this.scope['fillOpacity'] !== undefined && this.scope['opacity'] == this.scope['fillOpacity']) {
-      fn =
+    var fn =
         /**
          * @param {os.layer.ILayer} layer
-         * @this os.ui.layer.DefaultLayerUICtrl
          * @return {?os.command.ICommand}
          */
         function(layer) {
-          return new os.command.FeatureOpacity(layerId, featureId, value);
+          var initialValues = this.initialValues[layer.getId()];
+          var old = 1;
+          if (initialValues && initialValues[key] !== undefined) {
+            old = initialValues[key];
+          }
+
+          var cmd = old !== value ? new os.command.LayerStyle(layer.getId(), callback, value, old) : null;
+          if (cmd) {
+            cmd.title = 'Change ' + key;
+          }
+
+          return cmd;
         };
-    } else {
-      fn =
-        /**
-         * @param {os.layer.ILayer} layer
-         * @this os.ui.layer.DefaultLayerUICtrl
-         * @return {?os.command.ICommand}
-         */
-        function(layer) {
-          return new os.command.FeatureStrokeOpacity(layerId, featureId, value);
-        };
-    }
 
-    // TODO re-enable this, once I have the mess below figured out and integrated
-    // this.createFeatureCommand(fn);
-  }
-
-  if (0) {
-  var fn =
-      /**
-       * @param {os.layer.ILayer} layer
-       * @this os.ui.layer.DefaultLayerUICtrl
-       * @return {?os.command.ICommand}
-       */
-      function(layer) {
-        var initialValues = this.initialValues[layer.getId()];
-        var old = 1;
-        if (initialValues && initialValues[key] !== undefined) {
-          old = initialValues[key];
-        }
-
-        var cmd = old !== value ? new os.command.LayerStyle(layer.getId(), callback, value, old) : null;
-        if (cmd) {
-          cmd.title = 'Change ' + key;
-        }
-
-        return cmd;
-      };
-
-  this.createCommand(fn.bind(this));
-  this.setInitialValues_();
+    this.createCommand(fn.bind(this));
+    // this.setInitialValues_();
   }
 };
 
@@ -529,7 +513,6 @@ os.ui.layer.VectorLayerUICtrl.prototype.onSliderStop = function(callback, key, e
  */
 os.ui.layer.VectorLayerUICtrl.prototype.onFillOpacityValueChange = function(event, value) {
   event.stopPropagation();
-  console.log('VectorLayerUICtrl.onFillOpacityValueChange old/new', this.scope['fillOpacity'], value);
   this.scope['fillOpacity'] = value;
 };
 
@@ -542,7 +525,6 @@ os.ui.layer.VectorLayerUICtrl.prototype.onFillOpacityValueChange = function(even
  */
 os.ui.layer.VectorLayerUICtrl.prototype.onFillOpacityChange = function(event, value) {
   event.stopPropagation();
-  console.log('VectorLayerUICtrl.prototype.onFillOpacityChange actually fire change', value);
 
   // TODO this came from kmlnodelayerui.js and works there, but I need a different command here
   // var fn =
@@ -851,8 +833,7 @@ os.ui.layer.VectorLayerUICtrl.prototype.getFillColor = function() {
  * @protected
  */
 os.ui.layer.VectorLayerUICtrl.prototype.getFillOpacity = function() {
-  console.log('vectorlayeruictrl.getfillopacity', this.scope.fillOpacity);
-  var items = /** @type {Array<!plugin.file.kml.ui.KMLNode>} */ (this.scope['items']);
+  var items = /** @type {Array<!os.data.LayerNode>} */ (this.scope['items']);
   var opacity = os.style.DEFAULT_ALPHA;
 
   if (items) {

@@ -18,7 +18,6 @@ goog.require('os.ui');
  * @constructor
  */
 os.command.VectorLayerStrokeColor = function(layerId, color, opt_oldColor) {
-  console.log('VectorLayerStrokeColor', color);
   os.command.VectorLayerStrokeColor.base(this, 'constructor', layerId, color, opt_oldColor);
   this.title = 'Change Stroke Color';
   this.metricKey = os.metrics.Layer.VECTOR_STROKE_COLOR;
@@ -27,7 +26,8 @@ os.command.VectorLayerStrokeColor = function(layerId, color, opt_oldColor) {
     var layer = /** @type {os.layer.Vector} */ (os.MapContainer.getInstance().getLayer(this.layerId));
     if (layer) {
       var options = layer.getLayerOptions();
-      color = /** @type {string} */ (options && options['baseColor'] || os.command.VectorLayerStrokeColor.DEFAULT_COLOR);
+      color = /** @type {string} */ (options && options['baseColor'] ||
+          os.command.VectorLayerStrokeColor.DEFAULT_COLOR);
     }
   }
 
@@ -63,7 +63,6 @@ os.command.VectorLayerStrokeColor.prototype.getOldValue = function() {
  */
 os.command.VectorLayerStrokeColor.prototype.applyValue = function(config, value) {
   var color = os.style.toRgbaString(/** @type {string} */ (value));
-  console.log('VectorLayerStrokeColor.applyValue', value, color, config);
   os.style.setConfigColor(config, color, [os.style.StyleField.STROKE, os.style.StyleField.IMAGE]);
   os.ui.adjustIconSet(this.layerId, color);
 

@@ -1124,11 +1124,6 @@ os.layer.Vector.prototype.persist = function(opt_to) {
     opt_to[os.style.StyleField.SHOW_ELLIPSOIDS] = config[os.style.StyleField.SHOW_ELLIPSOIDS];
     opt_to[os.style.StyleField.SHOW_GROUND_REF] = config[os.style.StyleField.SHOW_GROUND_REF];
   }
-  console.log('vector.js:persist', config, opt_to);
-  console.log('- stroke.color / fill.color / fillColor / image.color / image.fill.color', config.stroke.color, config.fill.color, config.fillColor, config.color, config.image.color);
-  console.log('- no arg/fill', os.style.getConfigColor(config), os.style.getConfigColor(config, false, os.style.StyleField.FILL));
-  console.log('- color/fillColor', opt_to[os.style.StyleField.COLOR], opt_to[os.style.StyleField.FILL_COLOR]);
-  console.log('- opacity/fillOpacity', opt_to['opacity'], opt_to[os.style.StyleField.FILL_OPACITY]);
 
   var source = /** @type {os.IPersistable} */ (this.getSource());
   if (source && os.implements(source, os.source.ISource.ID)) {
@@ -1148,8 +1143,6 @@ os.layer.Vector.prototype.restore = function(config) {
   }
 
   var styleConf = os.style.StyleManager.getInstance().getOrCreateLayerConfig(this.getId());
-  console.log('-- Do we start with color/fill/fillColor', styleConf.color, styleConf.fill, styleConf.fillColor);
-  console.log('-- what we stored', config.color, config.fill, config.fillColor);
 
   if (config['provider'] != null) {
     this.setProvider(config['provider']);
@@ -1197,11 +1190,10 @@ os.layer.Vector.prototype.restore = function(config) {
 
   if (config[os.style.StyleField.COLOR] != null) {
     os.style.setConfigColor(styleConf, os.style.toRgbaString(config[os.style.StyleField.COLOR]));
-    console.log('-- Has fill been changed here? Likely', styleConf.color, styleConf.fill);
   }
 
   if (config[os.style.StyleField.FILL_COLOR] != null) {
-    os.style.setConfigColor(styleConf, os.style.toRgbaString(config[os.style.StyleField.FILL_COLOR], os.style.StyleField.FILL));
+    os.style.setConfigColor(styleConf, os.style.toRgbaString(config[os.style.StyleField.FILL_COLOR]));
   }
 
   if (config[os.style.StyleField.REPLACE_STYLE] != null) {
@@ -1270,10 +1262,6 @@ os.layer.Vector.prototype.restore = function(config) {
   styleConf[os.style.StyleField.LABEL_COLOR] = config[os.style.StyleField.LABEL_COLOR];
   styleConf[os.style.StyleField.LABEL_SIZE] = config[os.style.StyleField.LABEL_SIZE] || os.style.label.DEFAULT_SIZE;
   styleConf[os.style.StyleField.SHOW_LABELS] = config[os.style.StyleField.SHOW_LABELS] || false;
-  console.log('vector.js:restore', config, styleConf);
-  // console.log('- stroke.color / fill.color / fill / image.color / image.fill.color', config.stroke.color, config.fill.color, config.fillColor);
-  console.log('- color/fillColor', styleConf[os.style.StyleField.COLOR], styleConf[os.style.StyleField.FILL_COLOR]);
-  console.log('- opacity/fillOpacity', styleConf['opacity'], styleConf[os.style.StyleField.FILL_OPACITY]);
 
   var source = /** @type {os.IPersistable} */ (this.getSource());
   if (source && os.implements(source, os.source.ISource.ID)) {

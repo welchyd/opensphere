@@ -549,10 +549,7 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onOpacityValueChange = function(eve
 
 
 /**
- * Handle changes to fill opacity while it changes via slide controls
- * @param {?angular.Scope.Event} event
- * @param {?} value
- * @protected
+ * @inheritDoc
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillOpacityValueChange = function(event, value) {
   event.stopPropagation();
@@ -581,7 +578,6 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onLockChange = function() {
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onColorChange = function(event, value) {
   event.stopPropagation();
-  var fn;
 
   // Make sure the value includes the current opacity
   var colorValue = os.color.toRgbArray(value);
@@ -596,47 +592,47 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onColorChange = function(event, val
   this.scope['color'] = os.style.toRgbaString(colorValue);
 
   if (color == fillColor && opacity == fillOpacity) {
-    fn =
-    /**
-     * @param {string} layerId
-     * @param {string} featureId
-     * @return {os.command.ICommand}
-     */
-    function(layerId, featureId) {
-      return new os.command.FeatureColor(layerId, featureId, colorValue);
-    };
+    var fn =
+      /**
+       * @param {string} layerId
+       * @param {string} featureId
+       * @return {os.command.ICommand}
+       */
+      function(layerId, featureId) {
+        return new os.command.FeatureColor(layerId, featureId, colorValue);
+      };
 
     this.createFeatureCommand(fn);
   } else if (color == fillColor) {
     // We run these separately so that they retain the different opacities
-    fn =
-    /**
-     * @param {string} layerId
-     * @param {string} featureId
-     * @return {os.command.ICommand}
-     */
-    function(layerId, featureId) {
-      return new os.command.FeatureStrokeColor(layerId, featureId, colorValue);
-    };
+    var fn2 =
+      /**
+       * @param {string} layerId
+       * @param {string} featureId
+       * @return {os.command.ICommand}
+       */
+      function(layerId, featureId) {
+        return new os.command.FeatureStrokeColor(layerId, featureId, colorValue);
+      };
 
-    this.createFeatureCommand(fn);
+    this.createFeatureCommand(fn2);
 
     // Use the fill's opacity instead of the stroke's opacity
     colorValue[3] = fillOpacity;
 
-    fn =
-    /**
-     * @param {string} layerId
-     * @param {string} featureId
-     * @return {os.command.ICommand}
-     */
-    function(layerId, featureId) {
-      return new os.command.FeatureFillColor(layerId, featureId, colorValue);
-    };
+    var fn3 =
+       /**
+        * @param {string} layerId
+        * @param {string} featureId
+        * @return {os.command.ICommand}
+        */
+       function(layerId, featureId) {
+         return new os.command.FeatureFillColor(layerId, featureId, colorValue);
+       };
 
-    this.createFeatureCommand(fn);
+    this.createFeatureCommand(fn3);
   } else {
-    fn =
+    var fn4 =
     /**
      * @param {string} layerId
      * @param {string} featureId
@@ -646,16 +642,13 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onColorChange = function(event, val
       return new os.command.FeatureStrokeColor(layerId, featureId, colorValue);
     };
 
-    this.createFeatureCommand(fn);
+    this.createFeatureCommand(fn4);
   }
 };
 
 
 /**
- * Handles changes to fill color
- * @param {angular.Scope.Event} event
- * @param {string} value
- * @protected
+ * @inheritDoc
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillColorChange = function(event, value) {
   event.stopPropagation();
@@ -681,9 +674,7 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillColorChange = function(event,
 
 
 /**
- * Handles color reset
- * @param {angular.Scope.Event} event
- * @protected
+ * @inheritDoc
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillColorReset = function(event) {
   event.stopPropagation();
@@ -810,41 +801,38 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onCenterShapeChange = function(even
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onOpacityChange = function(event, value) {
   event.stopPropagation();
 
-  var fn;
-
   if (value) {
     if (this.scope['fillOpacity'] !== undefined && this.scope['opacity'] == this.scope['fillOpacity']) {
-      fn =
-        /**
-         * @param {string} layerId
-         * @param {string} featureId
-         * @return {os.command.ICommand}
-         */
-        function(layerId, featureId) {
-          return new os.command.FeatureOpacity(layerId, featureId, value);
-        };
-    } else {
-      fn =
-        /**
-         * @param {string} layerId
-         * @param {string} featureId
-         * @return {os.command.ICommand}
-         */
-        function(layerId, featureId) {
-          return new os.command.FeatureStrokeOpacity(layerId, featureId, value);
-        };
-    }
+      var fn =
+          /**
+           * @param {string} layerId
+           * @param {string} featureId
+           * @return {os.command.ICommand}
+           */
+          function(layerId, featureId) {
+            return new os.command.FeatureOpacity(layerId, featureId, value);
+          };
 
-    this.createFeatureCommand(fn);
+      this.createFeatureCommand(fn);
+    } else {
+      var fn2 =
+          /**
+           * @param {string} layerId
+           * @param {string} featureId
+           * @return {os.command.ICommand}
+           */
+          function(layerId, featureId) {
+            return new os.command.FeatureStrokeOpacity(layerId, featureId, value);
+          };
+
+      this.createFeatureCommand(fn2);
+    }
   }
 };
 
 
 /**
- * Handles changes to fill color
- * @param {angular.Scope.Event} event
- * @param {number} value
- * @protected
+ * @inheritDoc
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillOpacityChange = function(event, value) {
   event.stopPropagation();

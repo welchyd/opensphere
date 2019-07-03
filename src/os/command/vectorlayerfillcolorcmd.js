@@ -19,7 +19,6 @@ goog.require('os.ui');
  */
 os.command.VectorLayerFillColor = function(layerId, color, opt_oldColor) {
   os.command.VectorLayerFillColor.base(this, 'constructor', layerId, color, opt_oldColor);
-  console.log('VectorLayerFillColor', color);
   this.title = 'Change Fill Color';
   this.metricKey = os.metrics.Layer.VECTOR_FILL_COLOR;
 
@@ -63,10 +62,7 @@ os.command.VectorLayerFillColor.prototype.getOldValue = function() {
  */
 os.command.VectorLayerFillColor.prototype.applyValue = function(config, value) {
   var color = os.style.toRgbaString(/** @type {string} */ (value));
-  console.log('VectorLayerFillColor.applyValue', value, config);
-  console.log('- before color/fill/fillColor/image.fill', config.color, config.fill, config.fillColor, config.image.fill);
   os.style.setConfigColor(config, color, [os.style.StyleField.FILL]);
-  console.log('- after color/fill/fillColor/image.fill', config.color, config.fill, config.fillColor, config.image.fill);
   // os.ui.adjustIconSet(this.layerId, color);
 
   os.command.VectorLayerFillColor.base(this, 'applyValue', config, value);
