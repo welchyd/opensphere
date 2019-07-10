@@ -106,8 +106,6 @@ plugin.file.kml.KMLNodeLayerUICtrl = function($scope, $element, $timeout) {
   $scope.$on('fillOpacity.slide', this.onFillOpacityValueChange.bind(this));
   $scope.$on('fillOpacity.slidestart', this.onSliderStart.bind(this));
   $scope.$on('fillOpacity.slidestop', this.onFillOpacityChange.bind(this));
-  $scope.$on('fillColor.change', this.onFillColorChange.bind(this));
-  $scope.$on('fillColor.reset', this.onFillColorReset.bind(this));
 
   os.dispatcher.listen(plugin.file.kml.KMLNodeLayerUICtrl.UIEventType.REFRESH, this.initUI, false, this);
 };
@@ -137,19 +135,6 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.disposeInternal = function() {
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.getProperties = function() {
   return {}; // opacity set up in constructor
-};
-
-
-/**
- * @inheritDoc
- */
-plugin.file.kml.KMLNodeLayerUICtrl.prototype.initUI = function() {
-  plugin.file.kml.KMLNodeLayerUICtrl.base(this, 'initUI');
-
-  if (this.scope) {
-    this.scope['fillColor'] = this.getFillColor();
-    this.scope['fillOpacity'] = this.getFillOpacity();
-  }
 };
 
 
@@ -530,11 +515,7 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.getLockable = function() {
 
 
 /**
- * Handle changes to opacity while it changes via slide controls
- *
- * @param {?angular.Scope.Event} event
- * @param {?} value
- * @protected
+ * @inheritDoc
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onOpacityValueChange = function(event, value) {
   event.stopPropagation();
@@ -545,15 +526,6 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onOpacityValueChange = function(eve
   }
 
   this.scope['opacity'] = value; // do not set this on the config - the command takes care of that
-};
-
-
-/**
- * @inheritDoc
- */
-plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillOpacityValueChange = function(event, value) {
-  event.stopPropagation();
-  this.scope['fillOpacity'] = value;
 };
 
 
@@ -676,20 +648,6 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillColorChange = function(event,
 /**
  * @inheritDoc
  */
-plugin.file.kml.KMLNodeLayerUICtrl.prototype.onFillColorReset = function(event) {
-  event.stopPropagation();
-
-  // clear the layer color config value
-  this.onFillColorChange(event, '');
-
-  // reset to the layer color
-  this.scope['fillColor'] = this.getColor();
-};
-
-
-/**
- * @inheritDoc
- */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onSizeChange = function(event, value) {
   event.stopPropagation();
 
@@ -792,11 +750,7 @@ plugin.file.kml.KMLNodeLayerUICtrl.prototype.onCenterShapeChange = function(even
 
 
 /**
- * Handles changes to color
- *
- * @param {angular.Scope.Event} event
- * @param {number} value
- * @protected
+ * @inheritDoc
  */
 plugin.file.kml.KMLNodeLayerUICtrl.prototype.onOpacityChange = function(event, value) {
   event.stopPropagation();

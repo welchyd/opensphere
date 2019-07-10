@@ -70,7 +70,6 @@ os.ui.Module.directive('vectorstylecontrols', [os.ui.layer.vectorStyleControlsDi
  * @ngInject
  */
 os.ui.layer.VectorStyleControlsCtrl = function($scope) {
-  console.log('vectorstylecontrolsctrl.constructor', $scope);
   os.ui.layer.VectorStyleControlsCtrl.base(this, 'constructor');
 
   /**

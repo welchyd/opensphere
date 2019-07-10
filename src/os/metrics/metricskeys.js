@@ -243,6 +243,8 @@ os.metrics.Layer = {
   VECTOR_SHAPE: 'layers.features.changeVectorShape',
   VECTOR_CENTER_SHAPE: 'layers.features.changeVectorCenterShape',
   VECTOR_SIZE: 'layers.features.changeVectorSize',
+  VECTOR_FILL_OPACITY: 'layers.features.changeVectorFillOpacity',
+  VECTOR_STROKE_OPACITY: 'layers.features.changeVectorStrokeOpacity',
   VECTOR_LINE_DASH: 'layers.features.changeVectorLineDash',
   VECTOR_AUTO_REFRESH: 'layers.features.changeVectorAutoRefresh',
   VECTOR_ELLIPSOID: 'layers.features.changeVectorEllipsoid',

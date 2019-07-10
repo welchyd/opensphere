@@ -4,11 +4,14 @@ goog.provide('os.ui.layer.vectorLayerUIDirective');
 goog.require('goog.color');
 goog.require('os.MapChange');
 goog.require('os.array');
+goog.require('os.command.FeatureOpacity');
+goog.require('os.command.FeatureStrokeOpacity');
 goog.require('os.command.LayerStyle');
 goog.require('os.command.VectorLayerAutoRefresh');
 goog.require('os.command.VectorLayerCenterShape');
 goog.require('os.command.VectorLayerColor');
 goog.require('os.command.VectorLayerFillColor');
+goog.require('os.command.VectorLayerFillOpacity');
 goog.require('os.command.VectorLayerIcon');
 goog.require('os.command.VectorLayerLabel');
 goog.require('os.command.VectorLayerLabelColor');
@@ -150,12 +153,30 @@ os.ui.layer.VectorLayerUICtrl = function($scope, $element, $timeout) {
   // TODO need to add different handlers for the opacity slider. It should be handled differently than before.
 
   // fill style change handlers
-  $scope.$on('fillColor.change', this.onFillColorChange.bind(this));
-  $scope.$on('fillColor.reset', this.onFillColorReset.bind(this));
-  // TODO these three need to affect the fill opacity only, not the entire layer. So that needs some changes.
+  // $scope.$on('fillColor.change', this.onFillColorChange.bind(this));
+  // $scope.$on('fillColor.reset', this.onFillColorReset.bind(this));
+  // // TODO these three need to affect the fill opacity only, not the entire layer. So that needs some changes.
+  // $scope.$on('fillOpacity.slide', this.onFillOpacityValueChange.bind(this));
+  // $scope.$on('fillOpacity.slidestart', this.onSliderStart.bind(this));
+  // $scope.$on('fillOpacity.slidestop', this.onFillOpacityChange.bind(this));
+
+  // remove opacity to manage it separately
+  this.defaults = {
+    'brightness': 0,
+    'contrast': 1,
+    'hue': 0,
+    // 'opacity': 1,
+    'saturation': 1
+  };
+
+  $scope.$on('opacity.slide', this.onOpacityValueChange.bind(this));
+  $scope.$on('opacity.slidestart', this.onSliderStart.bind(this));
+  $scope.$on('opacity.slidestop', this.onOpacityChange.bind(this));
   $scope.$on('fillOpacity.slide', this.onFillOpacityValueChange.bind(this));
   $scope.$on('fillOpacity.slidestart', this.onSliderStart.bind(this));
   $scope.$on('fillOpacity.slidestop', this.onFillOpacityChange.bind(this));
+  $scope.$on('fillColor.change', this.onFillColorChange.bind(this));
+  $scope.$on('fillColor.reset', this.onFillColorReset.bind(this));
 
   // label change handlers
   $scope.$on('labelColor.change', this.onLabelColorChange.bind(this));
@@ -506,6 +527,25 @@ os.ui.layer.VectorLayerUICtrl.prototype.onSliderStop = function(callback, key, e
 
 
 /**
+ * Handle changes to opacity while it changes via slide controls
+ *
+ * @param {?angular.Scope.Event} event
+ * @param {?} value
+ * @protected
+ */
+os.ui.layer.VectorLayerUICtrl.prototype.onOpacityValueChange = function(event, value) {
+  event.stopPropagation();
+
+  // If we have a fill opacity and it is already the same as the stroke opacity, keep them the same
+  if (this.scope['fillOpacity'] !== undefined && this.scope['opacity'] == this.scope['fillOpacity']) {
+    this.scope['fillOpacity'] = value;
+  }
+
+  this.scope['opacity'] = value; // do not set this on the config - the command takes care of that
+};
+
+
+/**
  * Handle changes to fill opacity while it changes via slide controls
  * @param {?angular.Scope.Event} event
  * @param {?} value
@@ -518,6 +558,46 @@ os.ui.layer.VectorLayerUICtrl.prototype.onFillOpacityValueChange = function(even
 
 
 /**
+ * Handles changes to color
+ *
+ * @param {angular.Scope.Event} event
+ * @param {number} value
+ * @protected
+ */
+os.ui.layer.VectorLayerUICtrl.prototype.onOpacityChange = function(event, value) {
+  event.stopPropagation();
+
+  if (value) {
+    if (this.scope['fillOpacity'] !== undefined && this.scope['opacity'] == this.scope['fillOpacity']) {
+      var fn =
+          /**
+           * @param {string} layerId
+           * @param {string} featureId
+           * @return {os.command.ICommand}
+           */
+          function(layerId, featureId) {
+            return new os.command.FeatureOpacity(layerId, featureId, value);
+          };
+
+      this.createFeatureCommand(fn);
+    } else {
+      var fn2 =
+          /**
+           * @param {string} layerId
+           * @param {string} featureId
+           * @return {os.command.ICommand}
+           */
+          function(layerId, featureId) {
+            return new os.command.FeatureStrokeOpacity(layerId, featureId, value);
+          };
+
+      this.createFeatureCommand(fn2);
+    }
+  }
+};
+
+
+/**
  * Handles changes to fill color
  * @param {angular.Scope.Event} event
  * @param {number} value
@@ -525,19 +605,16 @@ os.ui.layer.VectorLayerUICtrl.prototype.onFillOpacityValueChange = function(even
  */
 os.ui.layer.VectorLayerUICtrl.prototype.onFillOpacityChange = function(event, value) {
   event.stopPropagation();
+  var fn =
+      /**
+       * @param {os.layer.ILayer} layer
+       * @return {os.command.ICommand}
+       */
+      function(layer) {
+        return new os.command.VectorLayerFillOpacity(layer.getId(), value);
+      };
 
-  // TODO this came from kmlnodelayerui.js and works there, but I need a different command here
-  // var fn =
-  //     /**
-  //      * @param {string} layerId
-  //      * @param {string} featureId
-  //      * @return {os.command.ICommand}
-  //      */
-  //     function(layerId, featureId) {
-  //       return new os.command.FeatureFillOpacity(layerId, featureId, value);
-  //     };
-
-  // this.createFeatureCommand(fn);
+  this.createCommand(fn);
 };
 
 
@@ -816,8 +893,12 @@ os.ui.layer.VectorLayerUICtrl.prototype.getFillColor = function() {
         var config = os.style.StyleManager.getInstance().getLayerConfig(items[0].getId());
 
         if (config) {
-          var color = /** @type {Array<number>} */ (os.style.getConfigColor(config, true));
-          return color ? goog.color.rgbArrayToHex(color) : color;
+          var color = os.style.getConfigColor(config, false, os.style.StyleField.FILL);
+          color = color || os.style.DEFAULT_LAYER_COLOR;
+
+          if (color) {
+            return os.color.toHexString(color);
+          }
         }
       }
     }

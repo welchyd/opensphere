@@ -19,7 +19,6 @@ goog.require('os.ui');
  * @constructor
  */
 os.command.VectorLayerColor = function(layerId, color, opt_oldColor) {
-  console.log('VectorLayerColor', color);
   os.command.VectorLayerColor.base(this, 'constructor', layerId, color, opt_oldColor);
   this.title = 'Change Color';
   this.metricKey = os.metrics.Layer.VECTOR_COLOR;
@@ -58,7 +57,6 @@ os.command.VectorLayerColor.prototype.getOldValue = function() {
  * @inheritDoc
  */
 os.command.VectorLayerColor.prototype.applyValue = function(config, value) {
-  console.log('VectorLayerColor.applyValue', value, config);
   var color = os.style.toRgbaString(/** @type {string} */ (value));
   os.style.setConfigColor(config, color);
   os.ui.adjustIconSet(this.layerId, color);
@@ -75,10 +73,8 @@ os.command.VectorLayerColor.prototype.finish = function(config) {
   var source = os.osDataManager.getSource(this.layerId);
   source.dispatchEvent(new os.events.PropertyChangeEvent(os.source.PropertyChange.COLOR, this.value));
 
-  console.log('VectorLayerColor.finish', config);
   if (source instanceof os.source.Vector) {
     // a color change on the layer should clear any color model on the source
-    console.log('- setColorModel');
     source.setColorModel(null);
   }
 

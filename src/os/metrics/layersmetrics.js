@@ -64,6 +64,16 @@ os.metrics.LayersMetrics = function() {
     key: os.metrics.Layer.VECTOR_SIZE
   });
   this.addChild(styleLeaf, {
+    label: 'Change Feature Layer Fill Opacity',
+    description: 'The fill opacity used to render the data for this layer.',
+    key: os.metrics.Layer.VECTOR_FILL_OPACITY
+  });
+  this.addChild(styleLeaf, {
+    label: 'Change Feature Layer Stroke Opacity',
+    description: 'The stroke opacity used to render the data for this layer.',
+    key: os.metrics.Layer.VECTOR_STROKE_OPACITY
+  });
+  this.addChild(styleLeaf, {
     label: 'Change Feature Layer Line Dash',
     description: 'The line dash for polygons and lines on this layer.',
     key: os.metrics.Layer.VECTOR_LINE_DASH

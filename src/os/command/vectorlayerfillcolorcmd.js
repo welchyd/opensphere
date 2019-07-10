@@ -63,7 +63,6 @@ os.command.VectorLayerFillColor.prototype.getOldValue = function() {
 os.command.VectorLayerFillColor.prototype.applyValue = function(config, value) {
   var color = os.style.toRgbaString(/** @type {string} */ (value));
   os.style.setConfigColor(config, color, [os.style.StyleField.FILL]);
-  // os.ui.adjustIconSet(this.layerId, color);
 
   os.command.VectorLayerFillColor.base(this, 'applyValue', config, value);
 };
